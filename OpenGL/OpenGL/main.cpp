@@ -63,8 +63,9 @@ int main()
 	// Bing the vertex array object
 	glBindVertexArray(vao);
 	
-	// Get reference to position in vertex shader
-	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+	// Get references to shader vars
+	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");		// Get reference to position in vertex shader
+	GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");	// Get triangle color 
 
 	// Specify the format of the attribute
 	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -90,6 +91,9 @@ int main()
 					window.close();
 			}
 		}
+
+		float time = (float)clock() / (float)CLOCKS_PER_SEC;
+		glUniform3f(uniColor, (sin(time *4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 
 		window.clear();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -140,7 +144,7 @@ void createShaderProgram(GLuint &shaderProgram_)
 	glCompileShader(vertexShader);
 
 	// Get fragment buffer
-	std::string fragmentShaderText = readTextFromFile("colourEverythingWhite.frag");
+	std::string fragmentShaderText = readTextFromFile("flashingTriangle.frag");
 	const char *fragmentShaderData = fragmentShaderText.c_str();
 
 	// Create fragment shader 
