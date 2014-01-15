@@ -30,9 +30,9 @@ int main()
 
 	// Set Verts for triangle
 	float vertices[] = {
-		 0.0f,  0.5f,	// Vertex 1 (X, Y)
-		 0.5f, -0.5f,	// Vertex 2 (X, Y)
-		-0.5f, -0.5f	// Vertex 3 (X, Y)
+		 0.0f,  0.5f, 1.0f, 0.0f, 0.0f,	// Vertex 1: Red
+		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,	// Vertex 2: Green
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f	// Vertex 3: Blue
 	};
 
 	// Setup vertex buffer
@@ -65,13 +65,15 @@ int main()
 	
 	// Get references to shader vars
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");		// Get reference to position in vertex shader
-	GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");	// Get triangle color 
+	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");	// Get triangle color attribute
 
 	// Specify the format of the attribute
-	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0);
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
 
 	// Enable vertex shader attribute
 	glEnableVertexAttribArray(posAttrib);
+	glEnableVertexAttribArray(colAttrib);
 
 	// While window open
 	while (window.isOpen())
@@ -91,9 +93,6 @@ int main()
 					window.close();
 			}
 		}
-
-		float time = (float)clock() / (float)CLOCKS_PER_SEC;
-		glUniform3f(uniColor, (sin(time *4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 
 		window.clear();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -131,7 +130,7 @@ void checkShaderForErrors(GLuint shader)
 void createShaderProgram(GLuint &shaderProgram_)
 {
 	// Get vertex buffer 
-	std::string vertexShaderText = readTextFromFile("outputVertex.vert");
+	std::string vertexShaderText = readTextFromFile("triangleDifferentColorCornor.vert");
 	const char *vertexShaderData = vertexShaderText.c_str();
 
 	// Create vertex shader
@@ -144,7 +143,7 @@ void createShaderProgram(GLuint &shaderProgram_)
 	glCompileShader(vertexShader);
 
 	// Get fragment buffer
-	std::string fragmentShaderText = readTextFromFile("flashingTriangle.frag");
+	std::string fragmentShaderText = readTextFromFile("inputColor.frag");
 	const char *fragmentShaderData = fragmentShaderText.c_str();
 
 	// Create fragment shader 
