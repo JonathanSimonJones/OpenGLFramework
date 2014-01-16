@@ -1,10 +1,19 @@
-//#define GLEW_STATIC
+/*
+	Name:			main.cpp
+	Project:		OpenGL
+	Description:	Contains entry point for OpenGL project
+	Doc Version:	1.4
+	Author:			Jonathan Simon Jones
+	Date(D/M/Y):	16-01-2014
+	To do:			Error check readTextFromFile
+*/
+
+// OpenGL includes
 #include <GL\glew.h>
-//#include <SFML\OpenGL.hpp>
 #include <SFML\Graphics.hpp>
-//#include <SFML\Window.hpp>
 #include <Windows.h>
 
+// STL includes
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -15,6 +24,7 @@ std::string readTextFromFile(std::string nameOfFile);
 void checkShaderForErrors(GLuint shader);
 void createShaderProgram(GLuint &shaderProgram_);
 
+// Main
 int main()
 {
 	// Create a window, set size, give name, set style
@@ -23,10 +33,6 @@ int main()
 	// OpenGL vars
 	glewExperimental = GL_TRUE;
 	glewInit();
-
-	// Create a circle shape
-	sf::CircleShape shape(100.0f);
-	shape.setFillColor(sf::Color::Green);
 
 	// Set Verts for triangle
 	float vertices[] = {
@@ -96,7 +102,6 @@ int main()
 
 		window.clear();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//window.draw(shape);
 		window.display();
 	}
 
