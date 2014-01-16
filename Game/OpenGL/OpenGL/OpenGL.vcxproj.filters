@@ -13,10 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{4f89af40-3aaf-45a6-8c1d-623881d032be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\VertexShaders">
+      <UniqueIdentifier>{6c93ef88-8162-4d9f-afc5-1dd815626bc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\FragmentShaders">
+      <UniqueIdentifier>{e090f393-bb69-4857-a12d-28d96251c9ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="..\..\..\Source\Sources\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Source\Shaders\FragmentShaders\colourEverythingWhite.frag">
+      <Filter>Shaders\FragmentShaders</Filter>
+    </None>
+    <None Include="..\..\..\Source\Shaders\FragmentShaders\flashingTriangle.frag">
+      <Filter>Shaders\FragmentShaders</Filter>
+    </None>
+    <None Include="..\..\..\Source\Shaders\FragmentShaders\inputColor.frag">
+      <Filter>Shaders\FragmentShaders</Filter>
+    </None>
+    <None Include="..\..\..\Source\Shaders\VertexShaders\outputVertex.vert">
+      <Filter>Shaders\VertexShaders</Filter>
+    </None>
+    <None Include="..\..\..\Source\Shaders\VertexShaders\triangleDifferentColorCornor.vert">
+      <Filter>Shaders\VertexShaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

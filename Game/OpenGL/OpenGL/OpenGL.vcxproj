@@ -10,6 +10,16 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Source\Sources\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Source\Shaders\FragmentShaders\colourEverythingWhite.frag" />
+    <None Include="..\..\..\Source\Shaders\FragmentShaders\flashingTriangle.frag" />
+    <None Include="..\..\..\Source\Shaders\FragmentShaders\inputColor.frag" />
+    <None Include="..\..\..\Source\Shaders\VertexShaders\outputVertex.vert" />
+    <None Include="..\..\..\Source\Shaders\VertexShaders\triangleDifferentColorCornor.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2BF9568-DE3F-4C82-93EE-1C80C05C37C7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -40,6 +50,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)..\..\Temp\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Temp\Intermediate\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -77,9 +89,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

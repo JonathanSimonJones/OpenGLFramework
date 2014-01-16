@@ -4,16 +4,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <SourcePath>$(SourcePath)</SourcePath>
-    <IncludePath>C:\Users\JJ\Documents\Abertay\Year4\Maths\Coursework\Source\Shaders;C:\Users\JJ\Documents\Abertay\Year4\Maths\Coursework\Source\Header;C:\Users\JJ\Documents\Abertay\Year4\Maths\Coursework\Source\Source;$(ProjectDir)..\..\..\..\Assets\Textures;$(IncludePath)</IncludePath>
-    <OutDir>C:\Users\JJ\Documents\Abertay\Year4\Maths\Coursework\Temp\$(Configuration)\</OutDir>
-    <IntDir>C:\Users\JJ\Documents\Abertay\Year4\Maths\Coursework\Temp\Intermediate\</IntDir>
+    <IncludePath>$(SolutionDir)\..\..\Source\Shaders;$(SolutionDir)\..\..\Source\Headers;$(SolutionDir)\..\..\Source\Sources;$(SolutionDir)\..\..\Assets\Textures;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\..\..\Temp\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\..\..\Temp\Intermediate\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
-      <Command>test.bat</Command>
+      <Command>xcopy $(SolutionDir)\..\..\Source\Shaders $(SolutionDir)\..\..\Temp\Debug /s /Y
+xcopy $(SolutionDir)\..\..\Source\Shaders $(SolutionDir)\$(ProjectName) /s /Y
+xcopy $(SolutionDir)\..\..\Lib $(SolutionDir)\..\..\Temp\Debug /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup />
