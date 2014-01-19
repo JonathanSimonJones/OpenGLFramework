@@ -44,5 +44,17 @@
     <None Include="..\..\..\Source\Shaders\VertexShaders\triangleDifferentColorCornor.vert">
       <Filter>Shaders\VertexShaders</Filter>
     </None>
+    <None Include="VertexShaders\Rotate.vert">
+      <Filter>Shaders\VertexShaders</Filter>
+    </None>
+    <None Include="VertexShaders\Rotate3D.vert">
+      <Filter>Shaders\VertexShaders</Filter>
+    </None>
+    <None Include="VertexShaders\color3D.vert">
+      <Filter>Shaders\VertexShaders</Filter>
+    </None>
+    <None Include="FragmentShaders\ReflectedCubeInFloor.frag">
+      <Filter>Shaders\FragmentShaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

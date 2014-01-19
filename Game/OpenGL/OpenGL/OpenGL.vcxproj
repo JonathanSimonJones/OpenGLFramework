@@ -19,6 +19,10 @@
     <None Include="..\..\..\Source\Shaders\FragmentShaders\inputColor.frag" />
     <None Include="..\..\..\Source\Shaders\VertexShaders\outputVertex.vert" />
     <None Include="..\..\..\Source\Shaders\VertexShaders\triangleDifferentColorCornor.vert" />
+    <None Include="FragmentShaders\ReflectedCubeInFloor.frag" />
+    <None Include="VertexShaders\color3D.vert" />
+    <None Include="VertexShaders\Rotate.vert" />
+    <None Include="VertexShaders\Rotate3D.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2BF9568-DE3F-4C82-93EE-1C80C05C37C7}</ProjectGuid>
@@ -63,7 +67,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>SFML_DYNAMIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Code\Libraries\WinOpenGL\glew-1.10.0\include;E:\Code\Libraries\WinOpenGL\SFML-2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Code\Libraries\WinOpenGL\glm;E:\Code\Libraries\WinOpenGL\glew-1.10.0\include;E:\Code\Libraries\WinOpenGL\SFML-2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

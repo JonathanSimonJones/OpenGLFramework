@@ -2,15 +2,20 @@
 	Name:			main.cpp
 	Project:		OpenGL
 	Description:	Contains entry point for OpenGL project
-	Doc Version:	1.4
+	Doc Version:	1.5
 	Author:			Jonathan Simon Jones
-	Date(D/M/Y):	16-01-2014
+	Date(D/M/Y):	18-01-2014
 	To do:			Error check readTextFromFile
 */
 
 // OpenGL includes
 #include <GL\glew.h>
-#include <SFML\Graphics.hpp>
+#include <SFML/Graphics.hpp>
+#include <glm/glm.hpp>						// Math library
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>				// Converting a matrix object into a float array
+
+// OS include
 #include <Windows.h>
 
 // STL includes
@@ -27,12 +32,18 @@ void createShaderProgram(GLuint &shaderProgram_);
 // Main
 int main()
 {
+	unsigned int windowWidth, windowHeight;
+	windowWidth = 800;
+	windowHeight = 600;
 	// Create a window, set size, give name, set style
-	sf::RenderWindow window(sf::VideoMode(800, 600), "OpenGL", sf::Style::Close);
+	sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "OpenGL", sf::Style::Close);
 
 	// OpenGL vars
 	glewExperimental = GL_TRUE;
 	glewInit();
+
+	// Enable depth testing
+	glEnable(GL_DEPTH_TEST);
 
 	// Set up vertex array object
 	GLuint vao;
@@ -41,12 +52,66 @@ int main()
 	// Bing the vertex array object
 	glBindVertexArray(vao);
 
-	// Set Verts for rectangle
+	/*
 	float vertices[] = {
-		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f,	// Top-left
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f,	// Top-right
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f,	// Bottom-right
-		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
+	  // X      Y     Z     R     G     B    
+		-0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 
+		 0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 
+		-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f
+	};
+	*/
+
+	GLfloat vertices[] = {
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 
+		 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 
+		 0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 
+		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 
+		-0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 
+
+		-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 
+		 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+
+		-0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 
+		-0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+
+		 0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
+
+		// Floor
+		-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
+		 1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
+		-1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
 	};
 
 	// Setup vertex buffer
@@ -89,18 +154,94 @@ int main()
 	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");	  // Get triangle color attribute
 
 	// Specify the format of the attribute
-	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0);
-	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
 
 	// Enable vertex shader attribute
 	glEnableVertexAttribArray(posAttrib);
 	glEnableVertexAttribArray(colAttrib);
 
+	// 2D rotation
+	glm::mat4 model;
+	model = glm::rotate(model, 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Set up uniform attribute 
+	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
+	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+
+	// Create view matrix
+	glm::mat4 view = glm::lookAt(			// Looks at specifies XY plane as ground, Z axis is up
+		glm::vec3(2.5f, 2.5f, 2.0f),		// Position
+		glm::vec3(0.0f, 0.0f, 0.0f),		// Where to look on the screen, forward vector
+		glm::vec3(0.0f, 0.0f, 1.0f)			// The up axis
+		);
+
+	// Set up uniform for view matrix
+	GLint uniView = glGetUniformLocation(shaderProgram, "view");
+	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+
+	// Create projection matrix
+	glm::mat4 proj = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 10.0f);		// perspective(vetical fov, aspect ratio, near, far)
+	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
+	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+
+	// Set up uniform attribute 
+	GLint uniColor = glGetUniformLocation(shaderProgram, "overrideColor");
+	glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);
+
+
 	// While window open
 	while (window.isOpen())
 	{
-		window.clear();
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Calculate transformation
+		model = glm::rotate(
+			model,
+			0.01f,
+			glm::vec3(0.0f, 0.0f, 1.0f) 
+			);
+		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+
+		// Set clear colour
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		// Clear back buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		// Draw cube
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Enable stencil testing
+		//glEnable(GL_STENCIL_TEST);
+
+			// Draw floor
+			//glStencilFunc(GL_ALWAYS, 1, 0xFF); // Set any stencil to 1
+			//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+			//glStencilMask(0xFF); // Write to stencil buffer
+			//glDepthMask(GL_FALSE); // Don't write to depth buffer
+			//glClear(GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+
+			glDrawArrays(GL_TRIANGLES, 36, 6);
+
+			// Draw cube reflection
+			//glStencilFunc(GL_EQUAL, 1, 0xFF); // Pass test if stencil value is 1
+			//glStencilMask(0x00); // Don't write anything to stencil buffer
+			//glDepthMask(GL_TRUE); // Write to depth buffer
+
+			// Draw reflected cube
+			/*model = glm::scale(
+				glm::translate(model, glm::vec3(0, 0, -1)),
+				glm::vec3(1, 1, -1)
+			);
+			glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+			
+			glUniform3f(uniColor, 0.3f, 0.3f, 0.3f);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);*/
+		
+		// Disable stencil testing
+		//glDisable(GL_STENCIL_TEST);
+
+		// Display back buffer
 		window.display();
 
 		// Handle messages
@@ -157,7 +298,7 @@ void checkShaderForErrors(GLuint shader)
 void createShaderProgram(GLuint &shaderProgram_)
 {
 	// Get vertex buffer 
-	std::string vertexShaderText = readTextFromFile("VertexShaders/triangleDifferentColorCornor.vert");
+	std::string vertexShaderText = readTextFromFile("VertexShaders/color3D.vert");
 	const char *vertexShaderData = vertexShaderText.c_str();
 
 	// Create vertex shader
@@ -168,6 +309,8 @@ void createShaderProgram(GLuint &shaderProgram_)
 
 	// Compile the vertex shader
 	glCompileShader(vertexShader);
+
+	checkShaderForErrors(vertexShader);
 
 	// Get fragment buffer
 	std::string fragmentShaderText = readTextFromFile("FragmentShaders/inputColor.frag");
@@ -181,6 +324,8 @@ void createShaderProgram(GLuint &shaderProgram_)
 
 	// Compile the fragment shader
 	glCompileShader(fragmentShader);
+
+	checkShaderForErrors(fragmentShader);
 
 	// Create shader program 
 	shaderProgram_ = glCreateProgram();
@@ -197,126 +342,3 @@ void createShaderProgram(GLuint &shaderProgram_)
 	glDeleteShader(fragmentShader);
     glDeleteShader(vertexShader);
 }
-
-//// Headers
-//#include <GL/glew.h>
-//#include <SFML/Window.hpp>
-//#include <iostream>
-//
-//// Shader sources
-//const GLchar* vertexSource =
-//    "#version 150 core\n"
-//    "in vec2 position;"
-//    "in vec3 color;"
-//    "out vec3 Color;"
-//    "void main() {"
-//    "   Color = color;"
-//    "   gl_Position = vec4(position, 0.0, 1.0);"
-//    "}";
-//const GLchar* fragmentSource =
-//    "#version 150 core\n"
-//    "in vec3 Color;"
-//    "out vec4 outColor;"
-//    "void main() {"
-//    "   outColor = vec4(Color, 1.0);"
-//    "}";
-//
-//int main()
-//{
-//    sf::Window window(sf::VideoMode(800, 600, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close);
-//    
-//    // Initialize GLEW
-//    glewExperimental = GL_TRUE;
-//    glewInit();
-//
-//    // Create Vertex Array Object
-//    GLuint vao;
-//    glGenVertexArrays(1, &vao);
-//    glBindVertexArray(vao);
-//
-//    // Create a Vertex Buffer Object and copy the vertex data to it
-//    GLuint vbo;
-//    glGenBuffers(1, &vbo);
-//
-//    GLfloat vertices[] = {
-//        -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-//         0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-//         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-//        -0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
-//    };
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//
-//    // Create an element array
-//    GLuint ebo;
-//    glGenBuffers(1, &ebo);
-//
-//    GLuint elements[] = {
-//        0, 1, 2,
-//        2, 3, 0
-//    };
-//
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
-//
-//    // Create and compile the vertex shader
-//    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-//    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-//    glCompileShader(vertexShader);
-//
-//    // Create and compile the fragment shader
-//    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-//    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-//    glCompileShader(fragmentShader);
-//
-//    // Link the vertex and fragment shader into a shader program
-//    GLuint shaderProgram = glCreateProgram();
-//    glAttachShader(shaderProgram, vertexShader);
-//    glAttachShader(shaderProgram, fragmentShader);
-//    glBindFragDataLocation(shaderProgram, 0, "outColor");
-//    glLinkProgram(shaderProgram);
-//    glUseProgram(shaderProgram);
-//
-//    // Specify the layout of the vertex data
-//    GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
-//    glEnableVertexAttribArray(posAttrib);
-//    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-//
-//    GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
-//    glEnableVertexAttribArray(colAttrib);
-//    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
-//
-//    while (window.isOpen())
-//    {
-//        // Clear the screen to black
-//        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-//        glClear(GL_COLOR_BUFFER_BIT);
-//        
-//        // Draw a rectangle from the 2 triangles using 6 indices
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-//
-//        // Swap buffers
-//        window.display();
-//
-//		sf::Event windowEvent;
-//        while (window.pollEvent(windowEvent))
-//        {
-//            switch (windowEvent.type)
-//            {
-//            case sf::Event::Closed:
-//                window.close();
-//                break;
-//            }
-//        }
-//    }
-//
-//    glDeleteProgram(shaderProgram);
-//    glDeleteShader(fragmentShader);
-//    glDeleteShader(vertexShader);
-//
-//    glDeleteBuffers(1, &ebo);
-//    glDeleteBuffers(1, &vbo);
-//
-//    glDeleteVertexArrays(1, &vao);
-//}
