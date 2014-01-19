@@ -14,6 +14,7 @@
 #include <glm/glm.hpp>						// Math library
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>				// Converting a matrix object into a float array
+#include <glm/gtc/quaternion.hpp>
 
 // OS include
 #include <Windows.h>
@@ -104,14 +105,6 @@ int main()
 		 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,
 		-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
 		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
-
-		// Floor
-		-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
-		 1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
-		-1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
-		-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f,
 	};
 
 	// Setup vertex buffer
@@ -163,7 +156,12 @@ int main()
 
 	// 2D rotation
 	glm::mat4 model;
-	model = glm::rotate(model, 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::fquat orientation(1.0f, 0.0f, 0.0f, 0.0f);
+	glm::vec3 position(0.0f, 0.0f, 0.0f);
+	position += glm::vec3(-5.0f, 0.0f, 0.0f);
+	model = glm::translate(model, position);
+
+	glm::mat4 ident;
 
 	// Set up uniform attribute 
 	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
@@ -171,7 +169,7 @@ int main()
 
 	// Create view matrix
 	glm::mat4 view = glm::lookAt(			// Looks at specifies XY plane as ground, Z axis is up
-		glm::vec3(2.5f, 2.5f, 2.0f),		// Position
+		glm::vec3(0.0f, -10.0f, 2.0f),		// Position
 		glm::vec3(0.0f, 0.0f, 0.0f),		// Where to look on the screen, forward vector
 		glm::vec3(0.0f, 0.0f, 1.0f)			// The up axis
 		);
@@ -181,7 +179,7 @@ int main()
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
 	// Create projection matrix
-	glm::mat4 proj = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 10.0f);		// perspective(vetical fov, aspect ratio, near, far)
+	glm::mat4 proj = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 15.0f);		// perspective(vetical fov, aspect ratio, near, far)
 	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
@@ -189,17 +187,21 @@ int main()
 	GLint uniColor = glGetUniformLocation(shaderProgram, "overrideColor");
 	glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);
 
+	const float fps = 200.0f;
+	const float dt = 1 / fps;
+	glm::vec3 velocity(0.1f, 0.0f, 0.0f);
+	glm::vec3 gravity(0.0f, 0.0f, -1.0f);
+
+	float rotation = 0.0f;
 
 	// While window open
 	while (window.isOpen())
 	{
 
-		// Calculate transformation
-		model = glm::rotate(
-			model,
-			0.01f,
-			glm::vec3(0.0f, 0.0f, 1.0f) 
-			);
+		//velocity += gravity * dt;
+		position += velocity * dt;
+		model = glm::translate(ident, position);
+		model = glm::rotate( model, rotation += 0.1f, glm::vec3(0.0f, 0.0f, 1.0f) );
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
 		// Set clear colour
@@ -209,37 +211,6 @@ int main()
 		
 		// Draw cube
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		// Enable stencil testing
-		//glEnable(GL_STENCIL_TEST);
-
-			// Draw floor
-			//glStencilFunc(GL_ALWAYS, 1, 0xFF); // Set any stencil to 1
-			//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-			//glStencilMask(0xFF); // Write to stencil buffer
-			//glDepthMask(GL_FALSE); // Don't write to depth buffer
-			//glClear(GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
-
-			glDrawArrays(GL_TRIANGLES, 36, 6);
-
-			// Draw cube reflection
-			//glStencilFunc(GL_EQUAL, 1, 0xFF); // Pass test if stencil value is 1
-			//glStencilMask(0x00); // Don't write anything to stencil buffer
-			//glDepthMask(GL_TRUE); // Write to depth buffer
-
-			// Draw reflected cube
-			/*model = glm::scale(
-				glm::translate(model, glm::vec3(0, 0, -1)),
-				glm::vec3(1, 1, -1)
-			);
-			glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
-			
-			glUniform3f(uniColor, 0.3f, 0.3f, 0.3f);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-			glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);*/
-		
-		// Disable stencil testing
-		//glDisable(GL_STENCIL_TEST);
 
 		// Display back buffer
 		window.display();
@@ -341,4 +312,13 @@ void createShaderProgram(GLuint &shaderProgram_)
 	// Delete the shaders as we do not need them anymore
 	glDeleteShader(fragmentShader);
     glDeleteShader(vertexShader);
+}
+
+inline glm::fquat AngularVelocityToSpin(glm::fquat orientation, glm::vec3 angularVelocity)
+{
+	const float x = angularVelocity.x;
+	const float y = angularVelocity.y;
+	const float z = angularVelocity.z;
+
+	return 0.5f * glm::fquat(0, x, y, z) * orientation;
 }
