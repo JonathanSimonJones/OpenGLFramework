@@ -2,10 +2,11 @@
 	Name:			main.cpp
 	Project:		OpenGL
 	Description:	Contains entry point for OpenGL project
-	Doc Version:	1.5
+	Doc Version:	1.6
 	Author:			Jonathan Simon Jones
-	Date(D/M/Y):	18-01-2014
+	Date(D/M/Y):	19-01-2014
 	To do:			Error check readTextFromFile
+					Fix min/max values in calculateBoxExtremes
 */
 
 // OpenGL includes
@@ -24,11 +25,30 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 struct AABB
 {
 	glm::vec3 center_position;
 	glm::vec3 radius;
+};
+
+struct extremes
+{
+	extremes(): minX(0.0f)
+	, maxX(0.0f)
+	, minY(0.0f)
+	, maxY(0.0f)
+	, minZ(0.0f)
+	, maxZ(0.0f)
+	{}
+
+	float minX;
+	float maxX;
+	float minY;
+	float maxY;
+	float minZ;
+	float maxZ;
 };
 
 // Prototypes
@@ -37,7 +57,7 @@ void checkShaderForErrors(GLuint shader);
 void createShaderProgram(GLuint &shaderProgram_);
 inline glm::fquat AngularVelocityToSpin(glm::fquat orientation, glm::vec3 angularVelocity);
 bool testAABBAABB(const AABB &a, const AABB &b);
-
+void calculateBoxExtremes(glm::mat4 transformMat, GLfloat newBoxCoords[], extremes &boxExtremes);
 
 // Main
 int main()
@@ -58,9 +78,6 @@ int main()
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 
-	// Enable alpha blending 
-	//glEnable(GL_BLEND);
-
 	// Set up vertex array object
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -69,7 +86,6 @@ int main()
 	glBindVertexArray(vao);
 
 	GLfloat vertices[] = {
-
 		// First cube
 		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 
 		 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 
@@ -114,7 +130,60 @@ int main()
 		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
 
 		// Second cube
+		/*-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
+		 0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
+		 0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
+		 0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
+		-0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
 		-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
+
+		-0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f, 
+		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+
+		-0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+
+		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+
+		-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f, -0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+
+		-0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
+		-0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f,*/
+
+		// Floor
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 
+		 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f,
+		 0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.5f,
+		 0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 
+		-0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 
+		-0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 
+	};
+
+	GLfloat boundingBoxVertices[] = { 
+		// Second cube
+		-0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
 		 0.5f, -0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
 		 0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
 		 0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f, 
@@ -155,59 +224,77 @@ int main()
 		 0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
 		-0.5f,  0.5f,  0.5f, 0.3f, 0.3f, 0.3f,
 		-0.5f,  0.5f, -0.5f, 0.3f, 0.3f, 0.3f,
-
-		// Floor
-		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 
-		 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f,
-		 0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.5f,
-		 0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 
-		-0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 
-		-0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 
 	};
+
+	GLfloat boundingBoxVertices2[48] = {0.0f};
 
 	// Setup vertex buffer
 	// This is used to store the vert info that is to be passed to the graphics card
-	GLuint vertexBuffer;				// Reference to memory where buffer is
-	glGenBuffers(1, &vertexBuffer);		// We only want one buffer
+	GLuint vertexBuffer[3];				// Reference to memory where buffer is
+	glGenBuffers(1, vertexBuffer);		// We only want one buffer
 
 	// Make buffer active
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);	// Make vertexBuffer the active array buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[0]);	// Make vertexBuffer the active array buffer
 													// Now that it is active we can copy the vertex data to it
 
 	// Copy vertex data to the active array buffer (currently vertexBuffer)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// glBufferData(the array to deal with, size in bytes, pointer to data, usage of vertex data)
 
-	float boundingBoxVertices[] = {
-	  // X      Y     Z     R     G     B    
-		-0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 
-		 0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 
-		-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f
-	};
-	
-	// Set up the elements
-	GLuint elements[] = { 
-		0, 1, 2,
-		2, 3, 0
-	};
+	// Make buffer active
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[1]);	// Make vertexBuffer the active array buffer
+															// Now that it is active we can copy the vertex data to it
 
-	// Setup element buffer
-	GLuint elementBuffer;
-	glGenBuffers(1, &elementBuffer);
+	// Copy vertex data to the active array buffer (currently vertexBuffer)
+	glBufferData(GL_ARRAY_BUFFER, sizeof(boundingBoxVertices), boundingBoxVertices, GL_STATIC_DRAW);		// glBufferData(the array to deal with, size in bytes, pointer to data, usage of vertex data)
 
 	// Make buffer active
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-	
-	// Copy elements to elemenet buffer
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[2]);	// Make vertexBuffer the active array buffer
+													// Now that it is active we can copy the vertex data to it
 
+	// Copy vertex data to the active array buffer (currently vertexBuffer)
+	glBufferData(GL_ARRAY_BUFFER, sizeof(boundingBoxVertices2), boundingBoxVertices2, GL_DYNAMIC_DRAW);		// glBufferData(the array to deal with, size in bytes, pointer to data, usage of vertex data)
+	
+	// Rebind first buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	GLuint elements[] = {
+		// Bottom
+		0, 2, 1,
+		3, 0, 2,
+
+		// Top
+		4, 6, 5,
+		7, 4, 6,
+
+		// Front
+		0, 5, 1,
+		4, 0, 5,
+
+		// Right
+		1, 6, 2,
+		5, 1, 6,
+
+		// Back
+		2, 7, 3,
+		6, 2, 7,
+
+		// Left 
+		3, 4, 0,
+		7, 3, 4,
+	};
+
+	GLuint ebo;
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+	
 	// Create shader program
 	GLuint shaderProgram;
 	createShaderProgram(shaderProgram);
 
 	// Set shader to graphcics pipeline
 	glUseProgram(shaderProgram);
-	
+
 	// Get references to shader vars
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "position"); // Get reference to position in vertex shader
 	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");	  // Get triangle color attribute
@@ -230,7 +317,7 @@ int main()
 	const float dt = 1 / fps;
 	glm::vec3 velocity(0.1f, 0.0f, 0.0f);
 	glm::vec3 gravity(0.0f, 0.0f, -1.0f);
-	glm::vec3 angularVelocity(-0.1f, 0.0f, 0.1f);
+	glm::vec3 angularVelocity(0.0f, 0.0f, 0.1f);
 
 	position += glm::vec3(0.0f, 0.0f, 0.0f);
 	model = glm::translate(model, position);
@@ -275,14 +362,15 @@ int main()
 	// While window open
 	while (window.isOpen())
 	{
-		
-
 		// Set clear colour
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		// Clear back buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Box 1
+			//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[0]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// glBufferData(the array to deal with, size in bytes, pointer to data, usage of vertex data)
+
 			// Advance linearly
 			//velocity += gravity * dt;
 			//position += velocity * dt;
@@ -293,6 +381,7 @@ int main()
 			orientation = orientation + spin * dt;
 			orientation = glm::normalize(orientation);
 			model = glm::rotate( model, glm::angle(orientation), glm::axis(orientation) );
+			glm::mat4 modelCopy = model;
 		
 			// Upload variables to graphics mem
 			glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -316,28 +405,44 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// AABB Box 1
+			//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[1]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(boundingBoxVertices2), boundingBoxVertices2, GL_STATIC_DRAW);	
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);// glBufferData(the array to deal with, size in bytes, pointer to data, usage of vertex data)
+
 			// Enable alpha blending 
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 
+			GLfloat temp[48] = {0.0f};
+			extremes boxExtremes;
+			calculateBoxExtremes(modelCopy, temp, boxExtremes);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(temp), temp);
+
 			// Calculate position
-			model = glm::translate(ident, position);
-			model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
+			//model = glm::translate(ident, position);
+			//model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
+
+			//glm::vec4 world(1.0f, 1.0f, 1.0f, 1.0f);
+			//world = world * model;
 
 			BBB1.center_position = position;
-			BBB1.radius = glm::vec3(0.5f * 1.5f, 0.5f * 1.5f, 0.5f * 1.5f);
+			BBB1.radius = glm::vec3(boxExtremes.minX - position.x, boxExtremes.minY - position.y, boxExtremes.minZ - position.z);
 		
 			// Upload variables to graphics mem
-			glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(ident));
 			glUniform1f(uniAlpha, 0.5f);
 
 			// Draw bounding box
-			glDrawArrays(GL_TRIANGLES, 36, 36);
+			//glDrawArrays(GL_TRIANGLES, 0, 36);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 			// Disable alpha blending
 			glDisable(GL_BLEND);
 
 		// Floor
+			//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[0]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// glBufferData(the array to deal with, size in bytes, pointer to data, usage of vertex data)
+
 			// Calculate position
 			model = glm::translate(ident, glm::vec3(0.0f, 0.0f, -0.5f));
 			model = glm::scale(model, glm::vec3(10.0f, 10.0f, 1.0f));
@@ -347,7 +452,7 @@ int main()
 			glUniform1f(uniAlpha, 1.0f);
 
 			// Draw bounding box
-			glDrawArrays(GL_TRIANGLES, 72, 6);
+			//glDrawArrays(GL_TRIANGLES, 36, 6);
 
 		
 		// Display back buffer
@@ -405,8 +510,7 @@ int main()
 
 	glDeleteProgram(shaderProgram);
 
-    glDeleteBuffers(1, &elementBuffer);
-    glDeleteBuffers(1, &vertexBuffer);
+    glDeleteBuffers(2, vertexBuffer);
 
     glDeleteVertexArrays(1, &vao);
 
@@ -501,4 +605,121 @@ bool testAABBAABB(const AABB &a, const AABB &b)
 	if(glm::abs(a.center_position.z - b.center_position.z) > (a.radius.z + b.radius.z)) return false;
 				
 	return true;
+}
+
+void calculateBoxExtremes(glm::mat4 transformMat, GLfloat newBoxCoords[], extremes &boxExtremes)
+{
+	std::vector<glm::vec4> v;
+	
+	// Get positions of verts
+	v.push_back(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f));
+	v.push_back(glm::vec4(-0.5f,  0.5f, -0.5f, 1.0f));
+	v.push_back(glm::vec4( 0.5f, -0.5f, -0.5f, 1.0f));
+	v.push_back(glm::vec4( 0.5f,  0.5f, -0.5f, 1.0f));
+	v.push_back(glm::vec4(-0.5f, -0.5f,  0.5f, 1.0f));
+	v.push_back(glm::vec4(-0.5f,  0.5f,  0.5f, 1.0f));
+	v.push_back(glm::vec4( 0.5f, -0.5f,  0.5f, 1.0f));
+	v.push_back(glm::vec4( 0.5f,  0.5f,  0.5f, 1.0f));
+
+	std::vector<glm::vec4> updateVerts;
+	
+	for(std::vector<glm::vec4>::iterator it = v.begin(); it != v.end(); it++)
+	{
+		updateVerts.push_back((*it) * transformMat);
+	}
+
+	for(std::vector<glm::vec4>::iterator it = updateVerts.begin(); it != updateVerts.end(); it++)
+	{
+		if((*it).x > boxExtremes.minX)
+		{
+			boxExtremes.minX = (*it).x;
+		}
+
+		if((*it).x < boxExtremes.maxX)
+		{
+			boxExtremes.maxX = (*it).x;
+		}
+
+		if((*it).y > boxExtremes.minY)
+		{
+			boxExtremes.minY = (*it).y;
+		}
+
+		if((*it).y < boxExtremes.maxY)
+		{
+			boxExtremes.maxY = (*it).y;
+		}
+
+		if((*it).z > boxExtremes.minZ)
+		{
+			boxExtremes.minZ = (*it).z;
+		}
+
+		if((*it).z < boxExtremes.maxZ)
+		{
+			boxExtremes.maxZ = (*it).z;
+		}
+	}
+
+	/*
+	std::vector<glm::vec3> newBoxCoords;
+	newBoxCoords.push_back(glm::vec3(boxExtremes.minX, boxExtremes.minY, boxExtremes.minZ));
+	newBoxCoords.push_back(glm::vec3(boxExtremes.maxX, boxExtremes.minY, boxExtremes.minZ));
+	newBoxCoords.push_back(glm::vec3(boxExtremes.maxX, boxExtremes.maxY, boxExtremes.minZ));
+	newBoxCoords.push_back(glm::vec3(boxExtremes.minX, boxExtremes.maxY, boxExtremes.minZ));
+
+	newBoxCoords.push_back(glm::vec3(boxExtremes.minX, boxExtremes.minY, boxExtremes.maxZ));
+	newBoxCoords.push_back(glm::vec3(boxExtremes.maxX, boxExtremes.minY, boxExtremes.maxZ));
+	newBoxCoords.push_back(glm::vec3(boxExtremes.maxX, boxExtremes.maxY, boxExtremes.maxZ));
+	newBoxCoords.push_back(glm::vec3(boxExtremes.minX, boxExtremes.maxY, boxExtremes.maxZ));
+	*/
+
+	newBoxCoords[0] = boxExtremes.minX;
+	newBoxCoords[1] = boxExtremes.minY;
+	newBoxCoords[2] = boxExtremes.minZ; 
+	newBoxCoords[3] = 0.3f; 
+	newBoxCoords[4] = 0.3f; 
+	newBoxCoords[5] = 0.3f; 
+	newBoxCoords[6] = boxExtremes.maxX; 
+	newBoxCoords[7] = boxExtremes.minY; 
+	newBoxCoords[8] = boxExtremes.minZ; 
+	newBoxCoords[9] = 0.3f; 
+	newBoxCoords[10] = 0.3f; 
+	newBoxCoords[11] = 0.3f; 
+	newBoxCoords[12] = boxExtremes.maxX; 
+	newBoxCoords[13] = boxExtremes.maxY; 
+	newBoxCoords[14] = boxExtremes.minZ; 
+	newBoxCoords[15] = 0.3f; 
+	newBoxCoords[16] = 0.3f; 
+	newBoxCoords[17] = 0.3f;
+	newBoxCoords[18] = boxExtremes.minX; 
+	newBoxCoords[19] = boxExtremes.maxY; 
+	newBoxCoords[20] = boxExtremes.minZ;
+	newBoxCoords[21] = 0.3f; 
+	newBoxCoords[22] = 0.3f; 
+	newBoxCoords[23] = 0.3f;
+	newBoxCoords[24] = boxExtremes.minX; 
+	newBoxCoords[25] = boxExtremes.minY; 
+	newBoxCoords[26] = boxExtremes.maxZ;
+	newBoxCoords[27] = 0.3f; 
+	newBoxCoords[28] = 0.3f; 
+	newBoxCoords[29] = 0.3f;
+	newBoxCoords[30] = boxExtremes.maxX; 
+	newBoxCoords[31] = boxExtremes.minY; 
+	newBoxCoords[32] = boxExtremes.maxZ;
+	newBoxCoords[33] = 0.3f; 
+	newBoxCoords[34] = 0.3f; 
+	newBoxCoords[35] = 0.3f;
+	newBoxCoords[36] = boxExtremes.maxX; 
+	newBoxCoords[37] = boxExtremes.maxY; 
+	newBoxCoords[38] = boxExtremes.maxZ;
+	newBoxCoords[39] = 0.3f; 
+	newBoxCoords[40] = 0.3f; 
+	newBoxCoords[41] = 0.3f;
+	newBoxCoords[42] = boxExtremes.minX; 
+	newBoxCoords[43] = boxExtremes.maxY; 
+	newBoxCoords[44] = boxExtremes.maxZ;
+	newBoxCoords[45] = 0.3f; 
+	newBoxCoords[46] = 0.3f; 
+	newBoxCoords[47] = 0.3f; 
 }
